@@ -4,7 +4,6 @@ import random as rd
 import datetime
 import time
 
-
 # Configuração para não mostrar informações de resumo
 pd.set_option('display.show_dimensions', False)
 
@@ -111,7 +110,7 @@ class Validador:
 
         return "Usuário cadastrado com sucesso!"
 
-    def validar_login(self, email_user, password_user):
+    def validar_login(self, email_user, password_user, admin):
 
         email_user = email_user.strip().lower()
         password_user = password_user.strip()
@@ -125,15 +124,62 @@ class Validador:
             'typeUser': user.typeUser
         } for user in self.gerenciador.bancoDadosUsers])
 
-        # Verifica se o email e a senha coincidem
-        VerificaUser = tabelaUsers_df[
-            (tabelaUsers_df['Email'] == email_user) & (tabelaUsers_df['Password'] == password_user)
-            ]
+        VerificaUser = ''
+
+        if admin:
+            # Caso seja um administrador
+            VerificaUser = tabelaUsers_df[
+                (tabelaUsers_df['Email'] == email_user) &
+                (tabelaUsers_df['Password'] == password_user) &
+                (tabelaUsers_df['typeUser'] == 'adm')
+                ]
+        else:
+            # Caso seja um usuário comum
+            VerificaUser = tabelaUsers_df[
+                (tabelaUsers_df['Email'] == email_user) &
+                (tabelaUsers_df['Password'] == password_user)
+                ]
 
         if not VerificaUser.empty:
             return True
         else:
             return False
+
+
+class Fornecedores:
+    def __init__(self, fornecedor_name=None, fornecedor_loc=None, fornecedor_cnpj=None, fornecedor_nicho=None, deleteName=None):
+        self.fornecedor_name = fornecedor_name
+        self.fornecedor_loc = fornecedor_loc
+        self.fornecedor_cnpj = fornecedor_cnpj
+        self.fornecedor_nicho = fornecedor_nicho
+
+    @staticmethod
+    def LerFornecedores():
+        return pd.read_excel("fornecedor.xlsx")
+
+    def CadastroFornecedor(self):
+        data = {
+            "Nome": [self.fornecedor_name],
+            "Loc": [self.fornecedor_loc],
+            "CNPJ": [self.fornecedor_cnpj],
+            "Nicho": [self.fornecedor_nicho]
+        }
+
+        fornecedor = pd.DataFrame(data)
+        fornecedores = pd.read_excel("fornecedor.xlsx")
+        fornecedores = pd.concat([fornecedores, fornecedor], ignore_index=True)
+        fornecedores.to_excel("fornecedor.xlsx", index=False)
+
+
+        return "Fornecedor Adicionado"
+
+
+def DeleteFornecedor(deleteName):
+    df = pd.read_excel("fornecedor.xlsx")
+    name = deleteName
+    df = df[df["Nome"] != name]
+    df.to_excel("fornecedor.xlsx", index=False)
+    return "Fornecedor Removido"
 
 
 class Estoque:
@@ -333,7 +379,7 @@ def pesquisarPorItem(dados, produto):
     return produto_encontrado
 
 
-def sign_in(gerenciador):
+def sign_in(gerenciador, admin=False):
     # Entrar
     limpar_terminal()
 
@@ -341,8 +387,8 @@ def sign_in(gerenciador):
     email_user = input("Email: ").strip().lower()
     password_user = input('Senha: ').strip()
 
-    validador = Validador(gerenciador)
-    entrou = validador.validar_login(email_user, password_user)
+    validador = Validador(gerenciador, admin)
+    entrou = validador.validar_login(email_user, password_user, admin)
 
     if entrou:
         return True
@@ -541,7 +587,70 @@ def main():
                 gestor_input = int(input("Insira sua escolha: "))
 
                 if gestor_input == 1:
-                    
+                    usuarioEntrou = sign_in(gerenciador, True)
+                    print(usuarioEntrou)
+
+                    if usuarioEntrou == True:
+
+                        gestor_function = 0
+
+                        while gestor_function != 6:
+
+                            limpar_terminal()
+                            print("Funções disponíveis: ")
+                            print("===================================")
+                            print("[1] Gerenciar Estoque")
+                            print("[2] Gerenciar Vendas")
+                            print("[3] Fornecedores")
+                            print("[4] Transportadoras")
+                            print("[5] Avaliações")
+                            print("[6] Retornar")
+                            print("===================================")
+                            gestor_function = int(input("Insira sua escolha: "))
+                            limpar_terminal()
+
+                            if (gestor_function == 3):
+
+                                fornecedor_action = 999
+
+                                while fornecedor_action != 3:
+                                    print(
+                                        "============================================================================")
+                                    df = Fornecedores.LerFornecedores()
+                                    df_filtrado = df[["Nome", "Loc", "CNPJ", "Nicho"]]
+                                    print(df_filtrado)
+                                    print(
+                                        "============================================================================")
+                                    print("[1] Adicionar Fornecedor        [2] Remover Fornecedor        [3] Retornar")
+                                    fornecedor_action = int(input("Insira sua escolha: "))
+
+                                    if fornecedor_action == 1:
+                                        name = (input("Insira o nome do Fornecedor: "))
+                                        loc = (input("Insira a localização do Fornecedor: "))
+                                        cnpj = (input("Insira o CNPJ do Fornecedor: "))
+                                        nicho = (input("Insira o nicho do Fornecedor: "))
+
+                                        fornecedor = Fornecedores(name, loc, cnpj, nicho)
+                                        fornecedor.CadastroFornecedor()
+
+                                        limpar_terminal()
+                                        print("Fornecedor Cadastrado com Sucesso!")
+                                        time.sleep(5)
+                                        limpar_terminal()
+
+                                    elif fornecedor_action == 2:
+                                        name = (input("Insira o nome do Fornecedor a ser Excluido: "))
+                                        DeleteFornecedor(name)
+
+                                        limpar_terminal()
+                                        print("Fornecedor Excluido")
+                                        time.sleep(5)
+                                        limpar_terminal()
+
+                    else:
+                        print("Login Incorreto \nSe achar que é uma falha do sistema contate o suporte")
+                        time.sleep(5)
+                        limpar_terminal()
 
                 if gestor_input == 2:
                     validacaoCadastro = sign_up(gerenciador, True)
@@ -550,7 +659,7 @@ def main():
                     time.sleep(5)
                     limpar_terminal()
 
-                if gestor_input == 3:
+                elif gestor_input == 3:
                     break
 
         else:
