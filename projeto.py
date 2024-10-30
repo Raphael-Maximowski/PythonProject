@@ -181,6 +181,10 @@ def DeleteFornecedor(deleteName):
     df.to_excel("fornecedor.xlsx", index=False)
     return "Fornecedor Removido"
 
+def ReceberFeedbacks():
+    return pd.read_excel("feedbacks.xlsx")
+
+
 
 class Estoque:
     def __init__(self, caminho_arquivo):
@@ -646,6 +650,16 @@ def main():
                                         print("Fornecedor Excluido")
                                         time.sleep(5)
                                         limpar_terminal()
+
+                            elif gestor_function == 5:
+                                feedbacks = ReceberFeedbacks()
+                                print(
+                                    "============================================================================")
+                                print(feedbacks)
+                                print(
+                                    "============================================================================")
+                                pausar()
+
 
                     else:
                         print("Login Incorreto \nSe achar que é uma falha do sistema contate o suporte")
