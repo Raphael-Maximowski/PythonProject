@@ -145,6 +145,36 @@ class Validador:
         else:
             return False
 
+class Transportadora:
+    def __init__(self, name, loc_central, cnpj):
+        self.name = name
+        self.loc_central = loc_central
+        self.cnpj = cnpj
+
+    def CreateTransportadora(self):
+        data = ([{
+            "Nome": self.name,
+            "Loc_Central" : self.loc_central,
+            "CNPJ": self.cnpj
+        }])
+
+        transportadora = pd.DataFrame(data)
+        transportadoras = pd.read_excel('transportadora.xlsx')
+        transportadoras = pd.concat([transportadoras, transportadora], ignore_index=True)
+        transportadoras.to_excel("transportadora.xlsx")
+
+
+    @staticmethod
+    def LerTransportadora():
+        return pd.read_excel("transportadora.xlsx")
+
+def DeleteTransportadora(deleteName):
+    df = pd.read_excel("transportadora.xlsx")
+    name = deleteName
+    df = df[df["Nome"] != name]
+    df.to_excel("transportadora.xlsx", index=False)
+    return "Fornecedor Removido"
+
 
 class Fornecedores:
     def __init__(self, fornecedor_name=None, fornecedor_loc=None, fornecedor_cnpj=None, fornecedor_nicho=None, deleteName=None):
@@ -645,6 +675,42 @@ def main():
                                     elif fornecedor_action == 2:
                                         name = (input("Insira o nome do Fornecedor a ser Excluido: "))
                                         DeleteFornecedor(name)
+
+                                        limpar_terminal()
+                                        print("Fornecedor Excluido")
+                                        time.sleep(5)
+                                        limpar_terminal()
+
+                            elif gestor_function == 4:
+                                transportadora_action = 999
+
+                                while transportadora_action != 3:
+                                    print(
+                                        "============================================================================")
+                                    df = Transportadora.LerTransportadora()
+                                    df_filtrado = df[["Nome", "Loc_Central", "CNPJ"]]
+                                    print(df_filtrado)
+                                    print(
+                                        "============================================================================")
+                                    print("[1] Adicionar Transportadora        [2] Remover Transportadora        [3] Retornar")
+                                    transportadora_action = int(input("Insira sua escolha: "))
+
+                                    if transportadora_action == 1:
+                                        name = (input("Insira o nome do Fornecedor: "))
+                                        loc = (input("Insira a localização do Fornecedor: "))
+                                        cnpj = (input("Insira o CNPJ do Fornecedor: "))
+
+                                        transportadora = Transportadora(name, loc, cnpj)
+                                        transportadora.CreateTransportadora()
+
+                                        limpar_terminal()
+                                        print("Transportadora Cadastrado com Sucesso!")
+                                        time.sleep(5)
+                                        limpar_terminal()
+
+                                    elif transportadora_action == 2:
+                                        name = (input("Insira o nome da Transportadora a ser Excluido: "))
+                                        DeleteTransportadora(name)
 
                                         limpar_terminal()
                                         print("Fornecedor Excluido")
