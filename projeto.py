@@ -260,6 +260,24 @@ class ManipularProdutos:
         self.Valor = Valor
         self.Estoque = Estoque
 
+    @staticmethod
+    def editProduto(code):
+        df = pd.read_excel("produtos.xlsx")
+        product = df[df["Code"] == code].values.tolist()
+        keys = [ "Code", "Produto", "Categoria", "Descricao", "Custo", "Valor", "Lucro", "Estoque" ]
+        for x in range(len(keys)):
+            limpar_terminal()
+            key = keys[x]
+            print("CASO QUEIRA ALTERAR OUTRO CAMPO INSIRA [ 0 ]")
+            print("==================================================")
+            value = input(f"Insira o (a) novo valor de { keys[x] }: ",)
+
+            if value != 0:
+                product.key = value
+
+        print(product)
+
+
     def createProduto(self):
         lucro = int(self.Valor) - int(self.Custo)
 
@@ -761,8 +779,7 @@ def main():
                                                     valor = input("Insira o valor: ")
                                                     estoque = input("Insira a quantidade em estoque: ")
                                                     print("=====================================================")
-                                                    newProduct = ManipularProdutos(code, produto, categoria, descricao, custo,
-                                                                                   valor, estoque)
+                                                    newProduct = ManipularProdutos(code, produto, categoria, descricao, custo, valor, estoque)
                                                     newProduct.createProduto()
 
                                                     limpar_terminal()
@@ -778,6 +795,11 @@ def main():
                                                     ManipularProdutos.deleteProduto(name)
                                                     time.sleep(5)
                                                     limpar_terminal()
+
+                                                elif estoque_function == 3:
+                                                    code = int(input("Insira o código do Produto: "))
+                                                    ManipularProdutos.editProduto(code)
+                                                    pausar()
 
                                                 elif estoque_function > 4 or estoque_function < 1:
                                                     WrongInput()
