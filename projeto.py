@@ -214,6 +214,50 @@ def DeleteFornecedor(deleteName):
 def ReceberFeedbacks():
     return pd.read_excel("feedbacks.xlsx")
 
+def VerVendas ():
+    return pd.read_excel("historico_vendas.xlsx")
+
+def VerFaturamento():
+    df = pd.read_excel("historico_vendas.xlsx")
+    col = df["Total da Venda"]
+    faturamento_lista = col.tolist()
+    return faturamento_lista
+
+class ManipularProdutos:
+    def __init__(self, Code, Produto, Categoria, Descricao, Custo, Valor, Estoque):
+        self.Code = Code
+        self.Produto = Produto
+        self.Categoria = Categoria
+        self.Descricao = Descricao
+        self.Custo = Custo
+        self.Valor = Valor
+        self.Estoque = Estoque
+
+    def createProduto(self):
+
+        lucro = int(self.Valor) -  int(self.Custo)
+
+        produto = [{
+            "Code" : self.Code,
+            "Produto": self.Produto,
+            "Categoria": self.Categoria,
+            "Descricao": self.Descricao,
+            "Custo": self.Custo,
+            "Valor": self.Valor,
+            "Lucro": lucro,
+            "Estoque": self.Estoque
+        }]
+
+        df = pd.DataFrame(produto)
+        produtos = pd.read_excel("produtos.xlsx")
+        new_produtos = pd.concat([produtos, df], ignore_index=True)
+        new_produtos.to_excel("produtos.xlsx", index=False)
+
+
+    @staticmethod
+    def loadProdutos():
+        return pd.read_excel("produtos.xlsx")
+
 
 
 class Estoque:
@@ -643,7 +687,88 @@ def main():
                             gestor_function = int(input("Insira sua escolha: "))
                             limpar_terminal()
 
-                            if (gestor_function == 3):
+                            if gestor_function == 1:
+
+                                estoque_function = 1000
+
+                                while estoque_function != 4:
+                                    print(
+                                        "=====================================================================================================================================================================")
+                                    df =  ManipularProdutos.loadProdutos()
+                                    print(df)
+                                    print(
+                                        "=====================================================================================================================================================================")
+                                    print("[1] Adicionar Produto \n[2] Remover Produto \n[3] Editar Produto \n[4] Retornar")
+                                    estoque_function = int(input("Insira sua escolha: "))
+
+                                    if estoque_function == 1:
+                                        print("Cadastrando Novo Produto: ")
+                                        print("=====================================================")
+                                        code = input("Insira o código do Produto: ")
+                                        produto = input("Insira o nome do produto: ")
+                                        categoria = input("Insira o categoria do produto: ")
+                                        descricao = input("Insira a descrição do produto: ")
+                                        custo = input("Insira o custo: ")
+                                        valor = input("Insira o valor: ")
+                                        estoque = input("Insira a quantidade em estoque: ")
+                                        print("=====================================================")
+                                        newProduct = ManipularProdutos(code, produto, categoria, descricao, custo, valor, estoque )
+                                        newProduct.createProduto()
+
+                                        limpar_terminal()
+                                        print("Produto Cadastrado ...")
+                                        time.sleep(5)
+                                        limpar_terminal()
+
+
+
+
+
+
+                            elif gestor_function == 2:
+
+                                vendas_action = 999
+
+                                while vendas_action != 3:
+                                    limpar_terminal()
+                                    print("===================================")
+                                    print("[1] Histórico de Vendas")
+                                    print("[2] Faturamento Total")
+                                    print("[3] Retornar")
+                                    print("===================================")
+                                    vendas_action = int(input("Insira sua escolha: "))
+                                    limpar_terminal()
+
+                                    if vendas_action == 1:
+                                        print(
+                                            "============================================================================")
+                                        df = VerVendas()
+                                        df_filtrado = df[["Data", "Produto", "Código", "Valor Unitário", "Total da Venda"]]
+                                        print(df_filtrado)
+                                        print(
+                                            "============================================================================")
+                                        pausar()
+
+                                    elif vendas_action == 2:
+                                        faturamento =  VerFaturamento()
+                                        total = 0
+                                        for x in range(len(faturamento)):
+                                            total += faturamento[x]
+
+                                        print(
+                                            "============================================================================")
+                                        df = VerVendas()
+                                        df_filtrado = df[["Produto", "Valor Unitário", "Total da Venda"]]
+                                        print(df_filtrado)
+                                        print(
+                                            "============================================================================")
+                                        print("FATURAMENTO TOTAL: R$", total)
+                                        print(
+                                            "============================================================================")
+                                        pausar()
+
+
+                            elif gestor_function == 3:
 
                                 fornecedor_action = 999
 
@@ -720,10 +845,10 @@ def main():
                             elif gestor_function == 5:
                                 feedbacks = ReceberFeedbacks()
                                 print(
-                                    "============================================================================")
+                                    "=====================================================================================================================")
                                 print(feedbacks)
                                 print(
-                                    "============================================================================")
+                                    "=====================================================================================================================")
                                 pausar()
 
 
