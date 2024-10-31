@@ -145,6 +145,12 @@ class Validador:
         else:
             return False
 
+def WrongInput():
+    limpar_terminal()
+    print("Insira uma opção válida!")
+    pausar()
+    limpar_terminal()
+
 class Transportadora:
     def __init__(self, name, loc_central, cnpj):
         self.name = name
@@ -154,7 +160,7 @@ class Transportadora:
     def CreateTransportadora(self):
         data = ([{
             "Nome": self.name,
-            "Loc_Central" : self.loc_central,
+            "Loc_Central": self.loc_central,
             "CNPJ": self.cnpj
         }])
 
@@ -163,21 +169,30 @@ class Transportadora:
         transportadoras = pd.concat([transportadoras, transportadora], ignore_index=True)
         transportadoras.to_excel("transportadora.xlsx")
 
-
     @staticmethod
     def LerTransportadora():
         return pd.read_excel("transportadora.xlsx")
 
+
 def DeleteTransportadora(deleteName):
     df = pd.read_excel("transportadora.xlsx")
-    name = deleteName
-    df = df[df["Nome"] != name]
-    df.to_excel("transportadora.xlsx", index=False)
-    return "Fornecedor Removido"
+    existe = (df["Nome"] == deleteName).any()
+
+    if existe:
+        name = deleteName
+        df = df[df["Nome"] != name]
+        df.to_excel("transportadora.xlsx", index=False)
+        print("Fornecedor Removido")
+        return "Fornecedor Removido"
+
+    else:
+        print("Fornecedor Não Encontrado")
+        return
 
 
 class Fornecedores:
-    def __init__(self, fornecedor_name=None, fornecedor_loc=None, fornecedor_cnpj=None, fornecedor_nicho=None, deleteName=None):
+    def __init__(self, fornecedor_name=None, fornecedor_loc=None, fornecedor_cnpj=None, fornecedor_nicho=None,
+                 deleteName=None):
         self.fornecedor_name = fornecedor_name
         self.fornecedor_loc = fornecedor_loc
         self.fornecedor_cnpj = fornecedor_cnpj
@@ -200,28 +215,40 @@ class Fornecedores:
         fornecedores = pd.concat([fornecedores, fornecedor], ignore_index=True)
         fornecedores.to_excel("fornecedor.xlsx", index=False)
 
-
         return "Fornecedor Adicionado"
 
 
 def DeleteFornecedor(deleteName):
     df = pd.read_excel("fornecedor.xlsx")
-    name = deleteName
-    df = df[df["Nome"] != name]
-    df.to_excel("fornecedor.xlsx", index=False)
-    return "Fornecedor Removido"
+
+    existe = (df["Nome"] == deleteName).any()
+
+    if existe:
+        name = deleteName
+        df = df[df["Nome"] != name]
+        df.to_excel("fornecedor.xlsx", index=False)
+        print("Fornecedor Removido")
+        return
+
+    else:
+        print("Fornecedor Não Encontrado")
+        return
+
 
 def ReceberFeedbacks():
     return pd.read_excel("feedbacks.xlsx")
 
-def VerVendas ():
+
+def VerVendas():
     return pd.read_excel("historico_vendas.xlsx")
+
 
 def VerFaturamento():
     df = pd.read_excel("historico_vendas.xlsx")
     col = df["Total da Venda"]
     faturamento_lista = col.tolist()
     return faturamento_lista
+
 
 class ManipularProdutos:
     def __init__(self, Code, Produto, Categoria, Descricao, Custo, Valor, Estoque):
@@ -234,11 +261,10 @@ class ManipularProdutos:
         self.Estoque = Estoque
 
     def createProduto(self):
-
-        lucro = int(self.Valor) -  int(self.Custo)
+        lucro = int(self.Valor) - int(self.Custo)
 
         produto = [{
-            "Code" : self.Code,
+            "Code": self.Code,
             "Produto": self.Produto,
             "Categoria": self.Categoria,
             "Descricao": self.Descricao,
@@ -253,10 +279,26 @@ class ManipularProdutos:
         new_produtos = pd.concat([produtos, df], ignore_index=True)
         new_produtos.to_excel("produtos.xlsx", index=False)
 
-
     @staticmethod
     def loadProdutos():
         return pd.read_excel("produtos.xlsx")
+
+    @staticmethod
+    def deleteProduto(name):
+        df = pd.read_excel("produtos.xlsx")
+
+        existe = (df["Produto"] == name).any()
+
+        if existe:
+            productname = name
+            df = df[df["Produto"] != productname]
+            df.to_excel("produtos.xlsx", index=False)
+            print("Produto Excluido")
+            return
+
+        else:
+            print("Produto Não Encontrado")
+
 
 
 
@@ -657,215 +699,270 @@ def main():
                 limpar_terminal()
 
                 print("Seja bem vindo Gestor!!\n")
-                print("===================================")
-                print("[1] Login")
-                print("[2] Cadastro")
-                print("[3] Retornar")
-                print("===================================")
-                gestor_input = int(input("Insira sua escolha: "))
+                print("[1] LOGIN")
+                print("[2] CADASTRO")
+                print("[3] RETORNAR\n")
 
-                if gestor_input == 1:
-                    usuarioEntrou = sign_in(gerenciador, True)
-                    print(usuarioEntrou)
+                try:
 
-                    if usuarioEntrou == True:
-
-                        gestor_function = 0
-
-                        while gestor_function != 6:
-
-                            limpar_terminal()
-                            print("Funções disponíveis: ")
-                            print("===================================")
-                            print("[1] Gerenciar Estoque")
-                            print("[2] Gerenciar Vendas")
-                            print("[3] Fornecedores")
-                            print("[4] Transportadoras")
-                            print("[5] Avaliações")
-                            print("[6] Retornar")
-                            print("===================================")
-                            gestor_function = int(input("Insira sua escolha: "))
-                            limpar_terminal()
-
-                            if gestor_function == 1:
-
-                                estoque_function = 1000
-
-                                while estoque_function != 4:
-                                    print(
-                                        "=====================================================================================================================================================================")
-                                    df =  ManipularProdutos.loadProdutos()
-                                    print(df)
-                                    print(
-                                        "=====================================================================================================================================================================")
-                                    print("[1] Adicionar Produto \n[2] Remover Produto \n[3] Editar Produto \n[4] Retornar")
-                                    estoque_function = int(input("Insira sua escolha: "))
-
-                                    if estoque_function == 1:
-                                        print("Cadastrando Novo Produto: ")
-                                        print("=====================================================")
-                                        code = input("Insira o código do Produto: ")
-                                        produto = input("Insira o nome do produto: ")
-                                        categoria = input("Insira o categoria do produto: ")
-                                        descricao = input("Insira a descrição do produto: ")
-                                        custo = input("Insira o custo: ")
-                                        valor = input("Insira o valor: ")
-                                        estoque = input("Insira a quantidade em estoque: ")
-                                        print("=====================================================")
-                                        newProduct = ManipularProdutos(code, produto, categoria, descricao, custo, valor, estoque )
-                                        newProduct.createProduto()
-
-                                        limpar_terminal()
-                                        print("Produto Cadastrado ...")
-                                        time.sleep(5)
-                                        limpar_terminal()
+                    gestor_input = int(input("Insira sua escolha: "))
 
 
+                    if gestor_input == 1:
+                        usuarioEntrou = sign_in(gerenciador, True)
 
+                        if usuarioEntrou == True:
 
+                            gestor_function = 0
 
+                            while gestor_function != 6:
 
-                            elif gestor_function == 2:
+                                limpar_terminal()
+                                print("Funções disponíveis: ")
+                                print("===================================")
+                                print("[1] Gerenciar Estoque")
+                                print("[2] Gerenciar Vendas")
+                                print("[3] Fornecedores")
+                                print("[4] Transportadoras")
+                                print("[5] Avaliações")
+                                print("[6] Retornar")
+                                print("===================================")
 
-                                vendas_action = 999
+                                try:
 
-                                while vendas_action != 3:
-                                    limpar_terminal()
-                                    print("===================================")
-                                    print("[1] Histórico de Vendas")
-                                    print("[2] Faturamento Total")
-                                    print("[3] Retornar")
-                                    print("===================================")
-                                    vendas_action = int(input("Insira sua escolha: "))
+                                    gestor_function = int(input("Insira sua escolha: "))
                                     limpar_terminal()
 
-                                    if vendas_action == 1:
+                                    if gestor_function == 1:
+
+                                        estoque_function = 1000
+
+                                        while estoque_function != 4:
+                                            print(
+                                                "=====================================================================================================================================================================")
+                                            df = ManipularProdutos.loadProdutos()
+                                            print(df)
+                                            print(
+                                                "=====================================================================================================================================================================")
+                                            print(
+                                                "[1] Adicionar Produto \n[2] Remover Produto \n[3] Editar Produto \n[4] Retornar")
+
+                                            try:
+                                                estoque_function = int(input("Insira sua escolha: "))
+
+                                                if estoque_function == 1:
+                                                    print("Cadastrando Novo Produto: ")
+                                                    print("=====================================================")
+                                                    code = input("Insira o código do Produto: ")
+                                                    produto = input("Insira o nome do produto: ")
+                                                    categoria = input("Insira o categoria do produto: ")
+                                                    descricao = input("Insira a descrição do produto: ")
+                                                    custo = input("Insira o custo: ")
+                                                    valor = input("Insira o valor: ")
+                                                    estoque = input("Insira a quantidade em estoque: ")
+                                                    print("=====================================================")
+                                                    newProduct = ManipularProdutos(code, produto, categoria, descricao, custo,
+                                                                                   valor, estoque)
+                                                    newProduct.createProduto()
+
+                                                    limpar_terminal()
+                                                    print("Produto Cadastrado ...")
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif estoque_function == 2:
+                                                    print(
+                                                        "=====================================================================================================================================================================")
+                                                    name = input("Insira o nome do produto a ser Deletado: ")
+                                                    limpar_terminal()
+                                                    ManipularProdutos.deleteProduto(name)
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif estoque_function > 4 or estoque_function < 1:
+                                                    WrongInput()
+
+                                            except ValueError:
+                                                WrongInput()
+
+                                    elif gestor_function == 2:
+
+                                        vendas_action = 999
+
+                                        while vendas_action != 3:
+                                            limpar_terminal()
+                                            print("===================================")
+                                            print("[1] Histórico de Vendas")
+                                            print("[2] Faturamento Total")
+                                            print("[3] Retornar")
+                                            print("===================================")
+
+                                            try:
+                                                vendas_action = int(input("Insira sua escolha: "))
+                                                limpar_terminal()
+
+                                                if vendas_action == 1:
+                                                    print(
+                                                        "============================================================================")
+                                                    df = VerVendas()
+                                                    df_filtrado = df[
+                                                        ["Data", "Produto", "Código", "Valor Unitário", "Total da Venda"]]
+                                                    print(df_filtrado)
+                                                    print(
+                                                        "============================================================================")
+                                                    pausar()
+
+                                                elif vendas_action == 2:
+                                                    faturamento = VerFaturamento()
+                                                    total = 0
+                                                    for x in range(len(faturamento)):
+                                                        total += faturamento[x]
+
+                                                    print(
+                                                        "============================================================================")
+                                                    df = VerVendas()
+                                                    df_filtrado = df[["Produto", "Valor Unitário", "Total da Venda"]]
+                                                    print(df_filtrado)
+                                                    print(
+                                                        "============================================================================")
+                                                    print("FATURAMENTO TOTAL: R$", total)
+                                                    print(
+                                                        "============================================================================")
+                                                    pausar()
+
+                                                elif vendas_action > 3 or vendas_action < 1:
+                                                    WrongInput()
+
+                                            except ValueError:
+                                                WrongInput()
+
+
+                                    elif gestor_function == 3:
+
+                                        fornecedor_action = 999
+
+                                        while fornecedor_action != 3:
+                                            print(
+                                                "============================================================================")
+                                            df = Fornecedores.LerFornecedores()
+                                            df_filtrado = df[["Nome", "Loc", "CNPJ", "Nicho"]]
+                                            print(df_filtrado)
+                                            print(
+                                                "============================================================================")
+                                            print("[1] Adicionar Fornecedor        [2] Remover Fornecedor        [3] Retornar")
+
+                                            try:
+                                                fornecedor_action = int(input("Insira sua escolha: "))
+
+                                                if fornecedor_action == 1:
+                                                    name = (input("Insira o nome do Fornecedor: "))
+                                                    loc = (input("Insira a localização do Fornecedor: "))
+                                                    cnpj = (input("Insira o CNPJ do Fornecedor: "))
+                                                    nicho = (input("Insira o nicho do Fornecedor: "))
+
+                                                    fornecedor = Fornecedores(name, loc, cnpj, nicho)
+                                                    fornecedor.CadastroFornecedor()
+
+                                                    limpar_terminal()
+                                                    print("Fornecedor Cadastrado com Sucesso!")
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif fornecedor_action == 2:
+                                                    name = (input("Insira o nome do Fornecedor a ser Excluido: "))
+
+                                                    limpar_terminal()
+                                                    DeleteFornecedor(name)
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif fornecedor_action > 3 or fornecedor_action < 1:
+                                                    WrongInput()
+
+                                            except ValueError:
+                                                WrongInput()
+
+                                    elif gestor_function == 4:
+                                        transportadora_action = 999
+
+                                        while transportadora_action != 3:
+                                            print(
+                                                "============================================================================")
+                                            df = Transportadora.LerTransportadora()
+                                            df_filtrado = df[["Nome", "Loc_Central", "CNPJ"]]
+                                            print(df_filtrado)
+                                            print(
+                                                "============================================================================")
+                                            print(
+                                                "[1] Adicionar Transportadora        [2] Remover Transportadora        [3] Retornar")
+
+                                            try:
+                                                transportadora_action = int(input("Insira sua escolha: "))
+
+                                                if transportadora_action == 1:
+                                                    name = (input("Insira o nome do Fornecedor: "))
+                                                    loc = (input("Insira a localização do Fornecedor: "))
+                                                    cnpj = (input("Insira o CNPJ do Fornecedor: "))
+
+                                                    transportadora = Transportadora(name, loc, cnpj)
+                                                    transportadora.CreateTransportadora()
+
+                                                    limpar_terminal()
+                                                    print("Transportadora Cadastrado com Sucesso!")
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif transportadora_action == 2:
+                                                    name = (input("Insira o nome da Transportadora a ser Excluido: "))
+
+                                                    limpar_terminal()
+                                                    DeleteTransportadora(name)
+                                                    time.sleep(5)
+                                                    limpar_terminal()
+
+                                                elif transportadora_action > 3 or transportadora_action < 1:
+                                                    WrongInput()
+
+                                            except ValueError:
+                                                WrongInput()  # Chama a função se a entrada não for um número válido
+
+                                    elif gestor_function == 5:
+                                        feedbacks = ReceberFeedbacks()
                                         print(
-                                            "============================================================================")
-                                        df = VerVendas()
-                                        df_filtrado = df[["Data", "Produto", "Código", "Valor Unitário", "Total da Venda"]]
-                                        print(df_filtrado)
+                                            "=====================================================================================================================")
+                                        print(feedbacks)
                                         print(
-                                            "============================================================================")
+                                            "=====================================================================================================================")
                                         pausar()
 
-                                    elif vendas_action == 2:
-                                        faturamento =  VerFaturamento()
-                                        total = 0
-                                        for x in range(len(faturamento)):
-                                            total += faturamento[x]
+                                    elif gestor_function < 1 or gestor_function > 6:
+                                        WrongInput()
 
-                                        print(
-                                            "============================================================================")
-                                        df = VerVendas()
-                                        df_filtrado = df[["Produto", "Valor Unitário", "Total da Venda"]]
-                                        print(df_filtrado)
-                                        print(
-                                            "============================================================================")
-                                        print("FATURAMENTO TOTAL: R$", total)
-                                        print(
-                                            "============================================================================")
-                                        pausar()
+                                except ValueError:
+                                    WrongInput()
 
+                        else:
+                            limpar_terminal()
+                            print("Login Incorreto \nSe achar que é uma falha do sistema contate o suporte")
+                            pausar()
+                            limpar_terminal()
 
-                            elif gestor_function == 3:
-
-                                fornecedor_action = 999
-
-                                while fornecedor_action != 3:
-                                    print(
-                                        "============================================================================")
-                                    df = Fornecedores.LerFornecedores()
-                                    df_filtrado = df[["Nome", "Loc", "CNPJ", "Nicho"]]
-                                    print(df_filtrado)
-                                    print(
-                                        "============================================================================")
-                                    print("[1] Adicionar Fornecedor        [2] Remover Fornecedor        [3] Retornar")
-                                    fornecedor_action = int(input("Insira sua escolha: "))
-
-                                    if fornecedor_action == 1:
-                                        name = (input("Insira o nome do Fornecedor: "))
-                                        loc = (input("Insira a localização do Fornecedor: "))
-                                        cnpj = (input("Insira o CNPJ do Fornecedor: "))
-                                        nicho = (input("Insira o nicho do Fornecedor: "))
-
-                                        fornecedor = Fornecedores(name, loc, cnpj, nicho)
-                                        fornecedor.CadastroFornecedor()
-
-                                        limpar_terminal()
-                                        print("Fornecedor Cadastrado com Sucesso!")
-                                        time.sleep(5)
-                                        limpar_terminal()
-
-                                    elif fornecedor_action == 2:
-                                        name = (input("Insira o nome do Fornecedor a ser Excluido: "))
-                                        DeleteFornecedor(name)
-
-                                        limpar_terminal()
-                                        print("Fornecedor Excluido")
-                                        time.sleep(5)
-                                        limpar_terminal()
-
-                            elif gestor_function == 4:
-                                transportadora_action = 999
-
-                                while transportadora_action != 3:
-                                    print(
-                                        "============================================================================")
-                                    df = Transportadora.LerTransportadora()
-                                    df_filtrado = df[["Nome", "Loc_Central", "CNPJ"]]
-                                    print(df_filtrado)
-                                    print(
-                                        "============================================================================")
-                                    print("[1] Adicionar Transportadora        [2] Remover Transportadora        [3] Retornar")
-                                    transportadora_action = int(input("Insira sua escolha: "))
-
-                                    if transportadora_action == 1:
-                                        name = (input("Insira o nome do Fornecedor: "))
-                                        loc = (input("Insira a localização do Fornecedor: "))
-                                        cnpj = (input("Insira o CNPJ do Fornecedor: "))
-
-                                        transportadora = Transportadora(name, loc, cnpj)
-                                        transportadora.CreateTransportadora()
-
-                                        limpar_terminal()
-                                        print("Transportadora Cadastrado com Sucesso!")
-                                        time.sleep(5)
-                                        limpar_terminal()
-
-                                    elif transportadora_action == 2:
-                                        name = (input("Insira o nome da Transportadora a ser Excluido: "))
-                                        DeleteTransportadora(name)
-
-                                        limpar_terminal()
-                                        print("Fornecedor Excluido")
-                                        time.sleep(5)
-                                        limpar_terminal()
-
-                            elif gestor_function == 5:
-                                feedbacks = ReceberFeedbacks()
-                                print(
-                                    "=====================================================================================================================")
-                                print(feedbacks)
-                                print(
-                                    "=====================================================================================================================")
-                                pausar()
-
-
-                    else:
-                        print("Login Incorreto \nSe achar que é uma falha do sistema contate o suporte")
+                    elif gestor_input == 2:
+                        validacaoCadastro = sign_up(gerenciador, True)
+                        limpar_terminal()
+                        print(validacaoCadastro, "\n")
                         time.sleep(5)
                         limpar_terminal()
 
-                if gestor_input == 2:
-                    validacaoCadastro = sign_up(gerenciador, True)
-                    limpar_terminal()
-                    print(validacaoCadastro, "\n")
-                    time.sleep(5)
-                    limpar_terminal()
+                    elif gestor_input == 3:
+                        break
 
-                elif gestor_input == 3:
-                    break
+                    elif gestor_input < 1 or gestor_input > 3:
+                        WrongInput()
+
+                except ValueError:
+                    WrongInput()
+
 
         else:
             print("Opção indisponível no momento!")
