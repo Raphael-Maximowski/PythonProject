@@ -352,14 +352,20 @@ class HistoricoVendas:
 
     def registrarVenda(self, itens, total):
         data_venda = datetime.datetime.now()
-
+        
+        itens_carrinho = []
+        
+        for item in itens:
+            
+            itens_carrinho.append(item)
+            
         # Assegura que o total seja numérico
         if total is None:
             total = 0.0
 
         venda = {
             "data_hora": data_venda,
-            "itens": itens,
+            "itens": itens_carrinho,
             "total": total  # Usa 'valor' como chave para manter consistência
         }
 
@@ -372,16 +378,9 @@ class HistoricoVendas:
             print("Nenhuma venda registrada no histórico.")
             return
 
-        for venda in self.vendas:
-            print(f"\nData da Venda: {venda['data_hora']}")
-            print("Itens:")
-            for item in venda['itens']:
-                print(
-                    f"- {item['produto']['Produto']} (Código: {item['produto']['Code']}) - Quantidade: {item['quantidade']} - Valor Unitário: R${item['produto']['Valor']:.2f}")
-
-            # Garantia de que valor seja sempre numérico para evitar erro de formatação
-            valor_total = venda['total'] if venda['total'] is not None else 0.0
-            print(f"Total da venda: R${valor_total:.2f}")
+        historico_vendas_df = pd.read_excel('historico_vendas.xlsx')
+        
+        print(historico_vendas_df)
 
     def salvarNoArquivoExcel(self):
         dados = []
@@ -700,9 +699,7 @@ def main():
 
                         elif escolha_userProduto == 5:
                             limpar_terminal()
-                            print("Saindo...")
-                            pausar()
-                            breakadmin
+                            break
 
                         else:
                             limpar_terminal()
@@ -716,6 +713,8 @@ def main():
                     print("Email ou senha incorretos. Tente novamente!")
                     print(f"{num_tentativas_restantes} tentativas restantes")
                     pausar()
+                    
+                break
 
         elif input_usuario == 2:  # Caso usuário escolha a opção cadastrar-se
             validacaoCadastro = sign_up(gerenciador)
