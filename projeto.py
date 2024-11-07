@@ -264,18 +264,31 @@ class ManipularProdutos:
     def editProduto(code):
         df = pd.read_excel("produtos.xlsx")
         product = df[df["Code"] == code].values.tolist()
+        product_index = df[df["Code"] == code].index
         keys = [ "Code", "Produto", "Categoria", "Descricao", "Custo", "Valor", "Lucro", "Estoque" ]
-        for x in range(len(keys)):
+        editInput = 1000
+        limpar_terminal()
+
+        while editInput != 9:
+            print("===========================================")
+            for x in range(len(keys)):
+                print(f'[{x + 1}] {keys[x]}: {product[0][x]}')
+            print('[9] Salvar: ')
+            print("===========================================")
+            editInput = int(input('Insira sua qual campo deseja editar: '))
             limpar_terminal()
-            key = keys[x]
-            print("CASO QUEIRA ALTERAR OUTRO CAMPO INSIRA [ 0 ]")
-            print("==================================================")
-            value = input(f"Insira o (a) novo valor de { keys[x] }: ",)
+            if editInput != 9:
+                newValue = input(f"Insira o novo valor do produto {product[0][1]} no campo {keys[editInput - 1]}: ")
+                product[0][editInput - 1] = newValue
 
-            if value != 0:
-                product.key = value
+        df.loc[product_index[0], keys] = product[0]
+        df.to_excel("produtos.xlsx", index=False)
+        pausar()
 
-        print(product)
+
+
+
+
 
 
     def createProduto(self):
@@ -767,6 +780,7 @@ def main():
 
                                             try:
                                                 estoque_function = int(input("Insira sua escolha: "))
+                                                limpar_terminal()
 
                                                 if estoque_function == 1:
                                                     print("Cadastrando Novo Produto: ")
@@ -799,7 +813,6 @@ def main():
                                                 elif estoque_function == 3:
                                                     code = int(input("Insira o código do Produto: "))
                                                     ManipularProdutos.editProduto(code)
-                                                    pausar()
 
                                                 elif estoque_function > 4 or estoque_function < 1:
                                                     WrongInput()
