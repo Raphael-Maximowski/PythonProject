@@ -4,6 +4,8 @@ import random as rd
 import datetime
 import time
 
+
+
 # Configuração para não mostrar informações de resumo
 pd.set_option('display.show_dimensions', False)
 
@@ -27,6 +29,8 @@ class Usuario:
         self.cpf = cpf
         self.password = password
         self.typeUser = typeUser
+        
+    
 
 
 class GerenciamentoUser:
@@ -60,6 +64,7 @@ class GerenciamentoUser:
 
         # Salva a lista atualizada de usuários
         self.salvarUsuario()
+        
 
     def cadastroAdmin(self, nome, email, cpf, password, typeUser="adm"):
         novoUser = Usuario(nome, email, cpf, password, typeUser)
@@ -285,12 +290,6 @@ class ManipularProdutos:
         df.to_excel("produtos.xlsx", index=False)
         pausar()
 
-
-
-
-
-
-
     def createProduto(self):
         lucro = int(self.Valor) - int(self.Custo)
 
@@ -402,8 +401,50 @@ class HistoricoVendas:
         # Cria um DataFrame e salva em um arquivo Excel
         historico_df = pd.DataFrame(dados)
         historico_df.to_excel("historico_vendas.xlsx", index=False)
+        
+# Function para feedback da compra
+def feedbackCompra(itens_carrinho, nome_usuario):
+    feedbackValue = input("Feedback: ")
 
+    # Supondo que `usuarioLogado` contém o nome do usuário
+    usuario = nome_usuario
 
+    # Extrai o nome do produto do primeiro item do carrinho como exemplo
+    nome_produto = itens_carrinho[0]['produto']["Produto"]
+
+    # Cria o dicionário com o feedback
+    feedback = {
+        "Comprador": usuario,
+        "Produto": nome_produto,
+        "Feedback": feedbackValue,
+    }
+
+    # Passa o dicionário como uma lista de um único elemento
+    feedback_df = pd.DataFrame([feedback])
+
+    # Adiciona ou salva no arquivo Excel
+    try:
+        feedbacks_existentes = pd.read_excel('feedbacks.xlsx')
+        feedback_df = pd.concat([feedbacks_existentes, feedback_df], ignore_index=True)
+    except FileNotFoundError:
+        pass
+
+    feedback_df.to_excel('feedbacks.xlsx', index=False)
+    print("Feedback registrado com sucesso!")
+
+def encontrarUsuario(usuarioLogado):
+    
+    df = pd.read_excel("users.xlsx")
+    
+    nome_usuario = df[df["Email"] == usuarioLogado]
+    
+    nome_user = 'aaaaa'
+    
+    for item, value in nome_usuario.iterrows():
+        nome_user = value["Nome"]
+        
+    return nome_user
+        
 class Carrinho:
     def __init__(self):
         self.itens = []
@@ -453,12 +494,16 @@ class Carrinho:
         if not produto_encontrado:
             print("Produto não encontrado no carrinho.")  # Agora apenas fora do loop
 
-    def comprar(self, historico):
+    def comprar(self, historico, usuarioLogado):
         total = self.exibir_carrinho()
         limpar_terminal()
         if input("Deseja finalizar a compra? (s/n): ").strip().lower() == 's':
             # Registrar a venda no histórico e esvaziar o carrinho
             historico.registrarVenda(self.itens, total)
+            
+            nome_usuario = encontrarUsuario(usuarioLogado)
+            
+            feedbackCompra(self.itens, nome_usuario)
 
             self.itens.clear()
             print("Compra realizada com sucesso e registrada no histórico!")
@@ -541,7 +586,7 @@ def sign_in(gerenciador, admin=False):
     entrou = validador.validar_login(email_user, password_user, admin)
 
     if entrou:
-        return True
+        return email_user
     else:
         return False
 
@@ -561,6 +606,7 @@ def sign_up(gerenciador, admin=False):
 
     # Valida o cadastro
     resultadoValidacao = validador.validar_cadastro(nome_input, email_input, cpf_input, password_input, admin)
+    
     return resultadoValidacao
 
 
@@ -569,6 +615,8 @@ def main():
     gerenciador = GerenciamentoUser()
     carrinho = Carrinho()
     historico = HistoricoVendas()
+    
+    num_tentativas_restantes = 3
 
     while True:
 
@@ -589,13 +637,13 @@ def main():
 
         if input_usuario == 1:  # Caso entrada de usuário seja um
 
-            num_tentativas_restantes = 3
-
             while num_tentativas_restantes > 0:
 
-                usuarioEntrou = sign_in(gerenciador)  # Retorna True para usuário existente e False para não existente
-
-                if usuarioEntrou:  # Caso seja True
+                usuario = sign_in(gerenciador)  # Retorna o usuário se ele
+                print(usuario)
+                
+                if usuario != False: # Caso seja diferente de false
+                    
 
                     while True:
                         limpar_terminal()
@@ -607,7 +655,7 @@ def main():
                         print(df_filtrado)
 
                         print(
-                            "\n[ 1 ] Adiconar ao carrinho [ 2 ] Filtrar por item [ 3 ] Exibir carrinho [ 4 ] Histórico de compras [ 5 ] Sair")
+                            "\n[ 1 ] Adiconar ao carrinho [ 2 ]Filtrar por categoria [ 3 ] Comprar [ 4 ] Histórico de compras [ 5 ] Sair")
 
                         try:
                             escolha_userProduto = int(input(": "))
@@ -680,7 +728,7 @@ def main():
                             carrinhoExibir = carrinho.exibir_carrinho()
 
                             if carrinhoExibir != "Vazio":
-                                print("[ 1 ] Remover Produto [ 2 ] Comprar Carrinho [ 3 ] Voltar")
+                                print("[ 1 ] Remover Produto [ 2 ] Finalizar compra [ 3 ] Voltar")
 
                                 escolha = int(input(": "))
 
@@ -689,7 +737,7 @@ def main():
                                     carrinho.remover_produto(code_produto, estoque)
 
                                 elif escolha == 2:
-                                    carrinho.comprar(historico)
+                                    carrinho.comprar(historico, usuario)
                                     pausar()
 
                         elif escolha_userProduto == 4:
@@ -709,13 +757,20 @@ def main():
 
                 else:  # Caso entrada seja Falsa
                     num_tentativas_restantes -= 1  # Decrementa um a cada tentativas
+                        
                     limpar_terminal()
                     print("Email ou senha incorretos. Tente novamente!")
                     print(f"{num_tentativas_restantes} tentativas restantes")
                     pausar()
-                    
+            
+                    continue
+                
                 break
-
+            if num_tentativas_restantes == 0:
+                        limpar_terminal()
+                        print("Saindo...")
+                        pausar()
+                    
         elif input_usuario == 2:  # Caso usuário escolha a opção cadastrar-se
             validacaoCadastro = sign_up(gerenciador)
             print(validacaoCadastro)
