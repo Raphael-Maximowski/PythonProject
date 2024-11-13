@@ -452,9 +452,10 @@ class Carrinho:
     def adicionar_produto(self, produto, quantidade, estoque):
         # Carrega o estoque atual diretamente do DataFrame em memória
         estoqueAtual = estoque.tabelaProdutos_df
+        
         for index, row in estoqueAtual.iterrows():
             if row['Code'] == produto['Code']:
-                if row['Estoque'] <= 0:
+                if row['Estoque'] < quantidade:
                     print(f"Estoque insuficiente! Disponível: {row['Estoque']}")
                     pausar()
                     return
@@ -616,9 +617,10 @@ def main():
     carrinho = Carrinho()
     historico = HistoricoVendas()
     
-    num_tentativas_restantes = 3
+    
 
     while True:
+        num_tentativas_restantes = 4
 
         # Login/Cadastro
         limpar_terminal()
@@ -640,7 +642,6 @@ def main():
             while num_tentativas_restantes > 0:
 
                 usuario = sign_in(gerenciador)  # Retorna o usuário se ele
-                print(usuario)
                 
                 if usuario != False: # Caso seja diferente de false
                     
@@ -766,6 +767,7 @@ def main():
                     continue
                 
                 break
+            
             if num_tentativas_restantes == 0:
                         limpar_terminal()
                         print("Saindo...")
